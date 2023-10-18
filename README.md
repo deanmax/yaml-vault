@@ -9,7 +9,11 @@
 ```bash
 # cat vault.yaml
 keys:
-  - key: secret/integration/test
+  - key: secret/integration/test1 (kv version 1)
+    values:
+      bar: foo
+      foo: bar
+  - key: secret/data/integration/test2 (kv version 2)
     values:
       bar: foo
       foo: bar

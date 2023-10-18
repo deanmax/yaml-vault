@@ -3,13 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"text/template"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/Luzifer/rconfig"
 	"github.com/hashicorp/vault/api"
@@ -60,7 +59,7 @@ func vaultTokenFromDisk() string {
 		return ""
 	}
 
-	data, err := ioutil.ReadFile(vf)
+	data, err := os.ReadFile(vf)
 	if err != nil {
 		return ""
 	}
@@ -144,7 +143,7 @@ func exportFromVault(client *api.Client) error {
 		return err
 	}
 
-	return ioutil.WriteFile(cfg.File, data, 0600)
+	return os.WriteFile(cfg.File, data, 0600)
 }
 
 func readRecurse(client *api.Client, path string, out *importFile) error {
@@ -189,7 +188,7 @@ func readRecurse(client *api.Client, path string, out *importFile) error {
 }
 
 func importToVault(client *api.Client) error {
-	keysRaw, err := ioutil.ReadFile(cfg.File)
+	keysRaw, err := os.ReadFile(cfg.File)
 	if err != nil {
 		return err
 	}
@@ -214,7 +213,10 @@ func importToVault(client *api.Client) error {
 				return err
 			}
 		} else {
-			if _, err := client.Logical().Write(field.Key, field.Values); err != nil {
+			secretData := map[string]interface{}{
+				"data": field.Values,
+			}
+			if _, err := client.Logical().Write(field.Key, secretData); err != nil {
 				if cfg.IgnoreErrors {
 					info("Error while writing data to key '%s': %s", field.Key, err)
 					continue
